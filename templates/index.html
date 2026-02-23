@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ComicCraft - AI Comic Story Teller</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="container">
+    <h1>🎨 ComicCraft</h1>
+    <p>Create your AI-powered comic story</p>
+
+    <form id="comicForm">
+        <input type="text" id="genre" placeholder="Genre (e.g. Fantasy, Sci-Fi)" required>
+        <input type="text" id="characters" placeholder="Characters (name + traits)" required>
+        <input type="text" id="setting" placeholder="Setting" required>
+        <input type="text" id="tone" placeholder="Tone (Funny, Dark, Dramatic)" required>
+        <input type="text" id="length" placeholder="Story Length (Short, 5 Panels, etc.)" required>
+
+        <button type="submit">Generate Comic</button>
+    </form>
+
+    <div id="loading" class="hidden">Generating your comic...</div>
+
+    <div id="error" class="error hidden"></div>
+
+    <div id="result" class="result hidden">
+        <h2>Your Comic Script</h2>
+        <pre id="comicOutput"></pre>
+    </div>
+</div>
+
+<script>
+document.getElementById("comicForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+
+    const loading = document.getElementById("loading");
+    const errorDiv = document.getElementById("error");
+    const resultDiv = document.getElementById("result");
+    const comicOutput = document.getElementById("comicOutput");
+
+    loading.classList.remove("hidden");
+    errorDiv.classList.add("hidden");
+    resultDiv.classList.add("hidden");
+
+    const data = {
+        genre: document.getElementById("genre").value,
+        characters: document.getElementById("characters").value,
+        setting: document.getElementById("setting").value,
+        tone: document.getElementById("tone").value,
+        length: document.getElementById("length").value
+    };
+
+    try {
+        const response = await fetch("/generate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        loading.classList.add("hidden");
+
+        if (!response.ok) {
+            errorDiv.textContent = result.error;
+            errorDiv.classList.remove("hidden");
+            return;
+        }
+
+        comicOutput.textContent = result.comic;
+        resultDiv.classList.remove("hidden");
+
+    } catch (err) {
+        loading.classList.add("hidden");
+        errorDiv.textContent = "Something went wrong.";
+        errorDiv.classList.remove("hidden");
+    }
+});
+</script>
+
+</body>
+</html>
